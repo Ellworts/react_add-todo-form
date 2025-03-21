@@ -6,45 +6,43 @@ import { TodoList } from './components/TodoList';
 import { Todo } from './types/Todo';
 
 export const App = () => {
-  const [todos, setTodos] = useState(
-    todosFromServer.map(todo => ({
-      ...todo,
-      user: usersFromServer.find(user => user.id === todo.userId) || null,
-    })),
-  );
   const [title, setTitle] = useState('');
   const [userId, setUserId] = useState(0);
   const [changeTitleInputError, setChangeTitleInputError] = useState(false);
   const [changeUserInputError, setChangeUserInputError] = useState(false);
 
+  // Подготовка данных в компоненте App
+  const users = usersFromServer;
+  const todos = todosFromServer.map(todo => ({
+    ...todo,
+    user: users.find(user => user.id === todo.userId) || null,
+  }));
+
   const handleTitleChange = (
-    titleInputChangeEvent: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>,
   ): void => {
     setChangeTitleInputError(false);
-    setTitle(titleInputChangeEvent.target.value);
+    setTitle(event.target.value);
   };
 
   const handleUserChange = (
-    userSelectChangeEvent: React.ChangeEvent<HTMLSelectElement>,
+    event: React.ChangeEvent<HTMLSelectElement>,
   ): void => {
     setChangeUserInputError(false);
-    setUserId(+userSelectChangeEvent.target.value);
+    setUserId(+event.target.value);
   };
 
-  const handleSubmit = (
-    formSubmitEvent: React.FormEvent<HTMLFormElement>,
-  ): void => {
-    formSubmitEvent.preventDefault();
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
 
-    setChangeTitleInputError(!title);
-    setChangeUserInputError(!userId);
+    setChangeTitleInputError(title === '');
+    setChangeUserInputError(userId === 0);
 
-    if (!title || !userId) {
+    if (title === '' || userId === 0) {
       return;
     }
 
-    const selectedUser =
-      usersFromServer.find(user => user.id === userId) || null;
+    const selectedUser = users.find(user => user.id === userId) || null;
 
     const newTodo: Todo = {
       id: Math.max(...todos.map(todo => todo.id), 0) + 1,
@@ -54,7 +52,8 @@ export const App = () => {
       user: selectedUser,
     };
 
-    setTodos([...todos, newTodo]);
+    todos.push(newTodo);
+
     setTitle('');
     setUserId(0);
   };
@@ -94,7 +93,7 @@ export const App = () => {
                 Choose a user
               </option>
 
-              {usersFromServer.map(userFromServer => (
+              {users.map(userFromServer => (
                 <option value={userFromServer.id} key={userFromServer.id}>
                   {userFromServer.name}
                 </option>
